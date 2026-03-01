@@ -244,7 +244,10 @@ void Player::Render(SDL_Renderer* renderer) const
         SDL_DestroyTexture(textTexture); // QUAN TRỌNG: Phải destroy nếu tạo trong Render
     }
 
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    if (m_Noplayer == 1)
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    else
+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 
     
 
