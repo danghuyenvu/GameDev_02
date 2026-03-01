@@ -3,6 +3,7 @@
 
 #include "game.h"
 #include "ball.h"
+#include "arena.h"
 #include <cmath>
 
 class Ball;
@@ -11,14 +12,16 @@ class Player
 {
 public:
     Player(Vector2 pos, int No = 1);
-
+    ~Player();
     void HandleInput(const bool* keyboardState);
-    void Update(float deltaTime, int arenaWidth, int arenaHeight, int wallThickness);
+    void Update(float deltaTime, Arena arena);
     void Render(SDL_Renderer* renderer) const;
     void PerformAttack(Ball& ball);
     void Bunt(Ball& ball);
     bool Check_collision(Ball& ball);
     int GetPlayerNumber() const { return m_Noplayer; }
+    bool IsDead();
+    void Reset(Vector2 vec);
 private:
     SDL_FRect m_rect;
 
@@ -44,11 +47,18 @@ private:
     int  m_jumpCount;
     int  m_maxJumps;
     bool m_jumpPressedLastFrame;
+<<<<<<< HEAD
 
     float m_buntCooldown;
     bool m_isBunting;
     float m_buntTimer;
     float m_buntDuration;
+=======
+    float m_nameW = 0, m_nameH = 0;
+    int m_maxHp = 200; // Để tính tỷ lệ % thanh máu
+    char pNum[3];
+    TTF_Font* font;
+>>>>>>> f41d74a2d5d6fe450a7348854cd72a0a6ab69100
 };
 
 #endif
