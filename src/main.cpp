@@ -8,9 +8,9 @@
 
 int main(int argc, char* argv[])
 {
-    if (!SDL_Init(SDL_INIT_VIDEO))
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD) < 0)
     {
-        std::cerr << "SDL_Init failed: " << SDL_GetError() << "\n";
+        std::cout << "SDL Init failed: " << SDL_GetError() << "\n";
         return -1;
     }
     if (!TTF_Init()) {
@@ -72,6 +72,14 @@ int main(int argc, char* argv[])
                 else if (event.key.scancode == SDL_SCANCODE_COMMA)
                 {
                     player2.CatchThrow(ball);
+                }
+            }
+
+            if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN)
+            {
+                if (event.gbutton.button == SDL_GAMEPAD_BUTTON_SOUTH)
+                {
+                    player2.PerformAttack(ball);
                 }
             }
         }

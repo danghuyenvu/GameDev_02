@@ -279,8 +279,8 @@ void Player::Render(SDL_Renderer* renderer) const
     {
         const int LAYERS = 6;              // how many arcs
         const int SEGMENTS = 28;           // smoothness
-        const float BASE_RADIUS = 20.0f;   // inner arc
-        float MAX_RADIUS  = 150.0f;  // OUTER ARC = MAX RANGE
+        const float BASE_RADIUS = 10.0f;   // inner arc
+        float MAX_RADIUS  = 160.0f;  // OUTER ARC = MAX RANGE
         const float ARC_WIDTH = 0.6f;      // arc spread (~35 degrees)
 
         float centerX = m_rect.x + m_rect.w / 2.0f;
@@ -344,9 +344,9 @@ void Player::Render(SDL_Renderer* renderer) const
             SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // cyan
 
         const int layers = 4;
-        const float spacing = 22.0f;     // distance between wave layers
-        const float lineHalfHeight = 55.0f;  // half height of each line
-        const float startOffset = 10.0f; // how far from player it begins
+        const float spacing = 50.0f;     // distance between wave layers
+        const float lineHalfHeight = 70.0f;  // half height of each line
+        const float startOffset = 5.0f; // how far from player it begins
 
         float centerX = m_rect.x + m_rect.w * 0.5f;
         float centerY = m_rect.y + m_rect.h * 0.5f;
@@ -400,7 +400,7 @@ void Player::PerformAttack(Ball& ball)
 {
     if (ball.IsCaught())
         return;
-    if (m_attackCooldown > 0.0f )
+    if (m_attackCooldown > 0.0f || m_isBunting || m_isCatching)
         return;
 
     m_isAttacking = true;
@@ -415,9 +415,9 @@ void Player::PerformAttack(Ball& ball)
     // --- Ball rect
     SDL_FRect& ballRect = ball.GetRect();
 
-    const float HITBOX_WIDTH  = 150.0f;
+    const float HITBOX_WIDTH  = 160.0f;
     const float HITBOX_HEIGHT = 160.0f;
-    const float OFFSET = 20.0f;
+    const float OFFSET = 10.0f;
 
     SDL_FRect hitbox;
 
@@ -499,15 +499,15 @@ void Player::Bunt(Ball& ball)
 {
     if (ball.IsCaught())
         return;
-    if (m_buntCooldown > 0.0f)
+    if (m_buntCooldown > 0.0f || m_isAttacking || m_isCatching)
         return;
     
     m_isBunting = true;
     m_buntTimer = m_buntDuration;
 
-    const float HITBOX_WIDTH  = 110.0f;
-    const float HITBOX_HEIGHT = 130.0f;
-    const float OFFSET = 10.0f;
+    const float HITBOX_WIDTH  = 140.0f;
+    const float HITBOX_HEIGHT = 140.0f;
+    const float OFFSET = 5.0f;
 
     float centerX = m_rect.x + m_rect.w * 0.5f;
     float centerY = m_rect.y + m_rect.h * 0.5f;
@@ -585,8 +585,8 @@ void Player::CatchThrow(Ball& ball)
 
     SDL_FRect& ballRect = ball.GetRect();
 
-    const float CATCH_WIDTH  = 100.0f;
-    const float CATCH_HEIGHT = 110.0f;
+    const float CATCH_WIDTH  = 125.0f;
+    const float CATCH_HEIGHT = 125.0f;
 
     float centerX = m_rect.x + m_rect.w * 0.5f;
     float centerY = m_rect.y + m_rect.h * 0.5f;
@@ -603,7 +603,7 @@ void Player::CatchThrow(Ball& ball)
         ball.Catch(this);
     }
 
-    m_catchCooldown = 0.9f;
+    m_catchCooldown = 0.8f;
 }
 
 SDL_FRect& Player::GetRect()
