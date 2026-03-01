@@ -24,7 +24,7 @@ private:
     int m_width;
     int m_height;
     int m_wallThickness;
-    Vector2 m_ballStartPos = Vector2(640.0f - 10.0f, 200.0f);
+    Vector2 m_ballStartPos = Vector2(640.0f, 150.0f);
 
     std::vector<SDL_FRect> m_walls;
 };

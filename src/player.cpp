@@ -29,11 +29,15 @@ Player::Player(Vector2 pos, int No)
       m_attackCooldown(0.0f),
       m_isAttacking(false),
       m_attackTimer(0.0f),
-      m_attackDuration(0.15f),
+      m_attackDuration(0.25f),
       m_jumpCount(0),
       m_maxJumps(2),
       m_Noplayer(No),
-      m_jumpPressedLastFrame(false)
+      m_jumpPressedLastFrame(false),
+      m_buntCooldown(0.0f),
+      m_isBunting(false),
+      m_buntTimer(0.0f),
+      m_buntDuration(0.15f)
 {
     m_rect = { pos.x, pos.y, 20.0f, 60.0f };
     m_hp = 200;
@@ -128,6 +132,18 @@ void Player::Update(float deltaTime, int arenaWidth, int arenaHeight, int wallTh
         m_attackTimer -= deltaTime;
         if (m_attackTimer <= 0.0f)
             m_isAttacking = false;
+    }
+
+    // Cooldown timer
+    if (m_buntCooldown > 0.0f)
+        m_buntCooldown -= deltaTime;
+
+    // Bunt active window
+    if (m_isBunting)
+    {
+        m_buntTimer -= deltaTime;
+        if (m_buntTimer <= 0.0f)
+            m_isBunting = false;
     }
 
     // Apply gravity
@@ -225,49 +241,119 @@ void Player::Render(SDL_Renderer* renderer) const
 
     if (m_isAttacking)
     {
-        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-
-        const float radius = 100.0f;
-        const int segments = 20;
+        const int LAYERS = 6;              // how many arcs
+        const int SEGMENTS = 28;           // smoothness
+        const float BASE_RADIUS = 20.0f;   // inner arc
+        float MAX_RADIUS  = 120.0f;  // OUTER ARC = MAX RANGE
+        const float ARC_WIDTH = 0.6f;      // arc spread (~35 degrees)
 
         float centerX = m_rect.x + m_rect.w / 2.0f;
         float centerY = m_rect.y + m_rect.h / 2.0f;
 
-        float startAngle = 0.0f;
-        float endAngle = 0.0f;
+        float baseAngle = 0.0f;
 
         switch (m_facing)
         {
-            case AttackDirection::Right:
-                startAngle = -0.5f;
-                endAngle   = 0.5f;
-                break;
-            case AttackDirection::Left:
-                startAngle = 2.64f;   // approx pi - 0.5
-                endAngle   = 3.64f;   // approx pi + 0.5
-                break;
-            case AttackDirection::Up:
-                startAngle = -2.07f;  // approx -pi/2 - 0.5
-                endAngle   = -1.07f;  // approx -pi/2 + 0.5
-                break;
-            case AttackDirection::Down:
-                startAngle = 1.07f;   // approx pi/2 - 0.5
-                endAngle   = 2.07f;   // approx pi/2 + 0.5
-                break;
+            case AttackDirection::Right: baseAngle = 0.0f; break;
+            case AttackDirection::Left:  baseAngle = PI; break;
+            case AttackDirection::Up:    baseAngle = -PI / 2.0f; MAX_RADIUS = 90; break;
+            case AttackDirection::Down:  baseAngle = PI / 2.0f; MAX_RADIUS = 90; break;
+            default: break;
         }
 
-        float step = (endAngle - startAngle) / segments;
+        float startAngle = baseAngle - ARC_WIDTH;
+        float endAngle   = baseAngle + ARC_WIDTH;
 
-        for (int i = 0; i < segments; ++i)
+        for (int layer = 1; layer <= LAYERS; layer++)
         {
-            float a1 = startAngle + step * i;
-            float a2 = startAngle + step * (i + 1);
+            float t = float(layer) / LAYERS;
 
-            float x1 = centerX + cosf(a1) * radius;
-            float y1 = centerY + sinf(a1) * radius;
+            // Radius grows outward
+            float radius = BASE_RADIUS + t * (MAX_RADIUS - BASE_RADIUS);
 
-            float x2 = centerX + cosf(a2) * radius;
-            float y2 = centerY + sinf(a2) * radius;
+            // Slight alpha fade outward
+            Uint8 alpha = static_cast<Uint8>(200 * t + 55);
+
+            if (m_Noplayer == 1)
+                SDL_SetRenderDrawColor(renderer, 255, 165, 0, alpha);
+            else
+                SDL_SetRenderDrawColor(renderer, 255, 0, 255, alpha);
+
+            float step = (endAngle - startAngle) / SEGMENTS;
+
+            for (int i = 0; i < SEGMENTS; ++i)
+            {
+                float a1 = startAngle + step * i;
+                float a2 = startAngle + step * (i + 1);
+
+                float x1 = centerX + cosf(a1) * radius;
+                float y1 = centerY + sinf(a1) * radius;
+
+                float x2 = centerX + cosf(a2) * radius;
+                float y2 = centerY + sinf(a2) * radius;
+
+                SDL_RenderLine(renderer,
+                    static_cast<int>(x1),
+                    static_cast<int>(y1),
+                    static_cast<int>(x2),
+                    static_cast<int>(y2));
+            }
+        }
+    }
+    if (m_isBunting)
+    {
+        if (m_Noplayer == 2)
+            SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255); // cyan
+        else
+            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // cyan
+
+        const int layers = 4;
+        const float spacing = 18.0f;     // distance between wave layers
+        const float lineHalfHeight = 40.0f;  // half height of each line
+        const float startOffset = 20.0f; // how far from player it begins
+
+        float centerX = m_rect.x + m_rect.w * 0.5f;
+        float centerY = m_rect.y + m_rect.h * 0.5f;
+
+        for (int i = 0; i < layers; ++i)
+        {
+            float offset = startOffset + i * spacing;
+
+            float x1, y1, x2, y2;
+
+            switch (m_facing)
+            {
+                case AttackDirection::Right:
+                    x1 = centerX + offset;
+                    y1 = centerY - lineHalfHeight;
+                    x2 = centerX + offset;
+                    y2 = centerY + lineHalfHeight;
+                    break;
+
+                case AttackDirection::Left:
+                    x1 = centerX - offset;
+                    y1 = centerY - lineHalfHeight;
+                    x2 = centerX - offset;
+                    y2 = centerY + lineHalfHeight;
+                    break;
+
+                case AttackDirection::Up:
+                    x1 = centerX - lineHalfHeight;
+                    y1 = centerY - offset;
+                    x2 = centerX + lineHalfHeight;
+                    y2 = centerY - offset;
+                    break;
+
+                case AttackDirection::Down:
+                    x1 = centerX - lineHalfHeight;
+                    y1 = centerY + offset;
+                    x2 = centerX + lineHalfHeight;
+                    y2 = centerY + offset;
+                    break;
+
+                default:
+                    continue;
+            }
 
             SDL_RenderLine(renderer, x1, y1, x2, y2);
         }
@@ -291,7 +377,7 @@ void Player::PerformAttack(Ball& ball)
     // --- Ball rect
     SDL_FRect& ballRect = ball.GetRect();
 
-    const float HITBOX_WIDTH  = 120.0f;
+    const float HITBOX_WIDTH  = 100.0f;
     const float HITBOX_HEIGHT = 120.0f;
     const float OFFSET = 20.0f;
 
@@ -314,17 +400,17 @@ void Player::PerformAttack(Ball& ball)
             break;
 
         case AttackDirection::Up:
-            hitbox = { realPx - HITBOX_WIDTH * 0.5f,
-                       realPy - OFFSET - HITBOX_HEIGHT,
-                       HITBOX_WIDTH,
-                       HITBOX_HEIGHT };
+            hitbox = { realPx - HITBOX_HEIGHT * 0.5f,
+                       realPy - OFFSET - HITBOX_WIDTH,
+                       HITBOX_HEIGHT,
+                       HITBOX_WIDTH };
             break;
 
         case AttackDirection::Down:
-            hitbox = { realPx - HITBOX_WIDTH * 0.5f,
+            hitbox = { realPx - HITBOX_HEIGHT * 0.5f,
                        realPy + OFFSET,
-                       HITBOX_WIDTH,
-                       HITBOX_HEIGHT };
+                       HITBOX_HEIGHT,
+                       HITBOX_WIDTH };
             break;
 
         default:
@@ -366,13 +452,19 @@ void Player::PerformAttack(Ball& ball)
 
     ball.SetOwner(this);
 
-    m_attackCooldown = 0.3f;
+    m_attackCooldown = 0.4f;
 }
 
 void Player::Bunt(Ball& ball)
 {
+    if (m_buntCooldown > 0.0f)
+        return;
+    
+    m_isBunting = true;
+    m_buntTimer = m_buntDuration;
+
     const float HITBOX_WIDTH  = 80.0f;
-    const float HITBOX_HEIGHT = 80.0f;
+    const float HITBOX_HEIGHT = 90.0f;
     const float OFFSET = 0.0f;
 
     float centerX = m_rect.x + m_rect.w * 0.5f;
@@ -397,17 +489,17 @@ void Player::Bunt(Ball& ball)
             break;
 
         case AttackDirection::Up:
-            hitbox = { centerX - HITBOX_WIDTH * 0.5f,
-                       centerY - OFFSET - HITBOX_HEIGHT,
-                       HITBOX_WIDTH,
-                       HITBOX_HEIGHT };
+            hitbox = { centerX - HITBOX_HEIGHT * 0.5f,
+                       centerY - OFFSET - HITBOX_WIDTH,
+                       HITBOX_HEIGHT,
+                       HITBOX_WIDTH };
             break;
 
         case AttackDirection::Down:
-            hitbox = { centerX - HITBOX_WIDTH * 0.5f,
+            hitbox = { centerX - HITBOX_HEIGHT * 0.5f,
                        centerY + OFFSET,
-                       HITBOX_WIDTH,
-                       HITBOX_HEIGHT };
+                       HITBOX_HEIGHT,
+                       HITBOX_WIDTH };
             break;
 
         default:
@@ -420,6 +512,8 @@ void Player::Bunt(Ball& ball)
     {
         ball.StartBunt(this, m_facing);
     }
+
+    m_buntCooldown = 0.2f;
 }
 
 bool Player::Check_collision(Ball& ball)

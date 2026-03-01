@@ -35,8 +35,8 @@ private:
     float m_jumpHoldTime;
 
     AttackDirection m_facing;
-    float m_attackCooldown;
 
+    float m_attackCooldown;
     bool  m_isAttacking;
     float m_attackTimer;
     float m_attackDuration;
@@ -44,6 +44,11 @@ private:
     int  m_jumpCount;
     int  m_maxJumps;
     bool m_jumpPressedLastFrame;
+
+    float m_buntCooldown;
+    bool m_isBunting;
+    float m_buntTimer;
+    float m_buntDuration;
 };
 
 #endif

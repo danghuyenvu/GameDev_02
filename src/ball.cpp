@@ -3,7 +3,7 @@
 #include <cmath>
 
 static constexpr float GRAVITY = 10.0f;        // Very weak gravity
-static constexpr float BOUNCE_LOSS= 3.0f;     // Very small energy loss
+static constexpr float BOUNCE_LOSS= 10.0f;     // Very small energy loss
 
 Ball::Ball(Vector2 pos, float size)
     : m_vel(Vector2()),
