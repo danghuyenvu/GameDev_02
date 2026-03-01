@@ -108,3 +108,37 @@ void Arena::CheckCollision(SDL_FRect& ballRect, Vector2 &vel) const
         }
     }
 }
+
+void Arena::DrawScoreboard(SDL_Renderer* renderer, TTF_Font* fontScore, int *scoreboard){
+    if (!fontScore) return;
+
+    // Màu trắng nhưng cực kỳ mờ (Alpha = 40)
+    SDL_Color scoreColor = { 255, 255, 255, 40 }; 
+
+    for (int i = 0; i < 2; ++i) {
+        char scoreStr[4];
+        snprintf(scoreStr, sizeof(scoreStr), "%d", scoreboard[i]);
+
+        SDL_Surface* surface = TTF_RenderText_Blended(fontScore, scoreStr, 0, scoreColor);
+        if (surface) {
+            SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+            
+            float textW = (float)surface->w;
+            float textH = (float)surface->h;
+
+            // Vị trí: Số bên trái ở 1/4 chiều rộng, số bên phải ở 3/4 chiều rộng
+            float posX = (i == 0) ? (m_width * 0.25f - textW / 2.0f) 
+                                 : (m_width * 0.75f - textW / 2.0f);
+            float posY = (m_height / 2.0f) - (textH / 2.0f);
+
+            SDL_FRect destRect = { posX, posY, textW, textH };
+            
+            // Vẽ lên màn hình
+            SDL_RenderTexture(renderer, texture, NULL, &destRect);
+
+            // Dọn dẹp ngay để tránh leak
+            SDL_DestroySurface(surface);
+            SDL_DestroyTexture(texture);
+        }
+    }
+}

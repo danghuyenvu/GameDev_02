@@ -32,12 +32,12 @@ int main(int argc, char* argv[])
     Player player(Vector2(600.0f, 500.0f));
     Player player2(Vector2(400.0f, 500.0f), 2);
     int scoreboard[2] = {0};
-
+    TTF_Font* fontScore = TTF_OpenFont("/System/Library/Fonts/Supplemental/Arial.ttf", 300);
     bool running = true;
 
     Uint64 lastCounter = SDL_GetPerformanceCounter();
     Uint64 frequency = SDL_GetPerformanceFrequency();
-
+    bool first = true;
     while (running)
     {
         // ---- Events ----
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
         // ---- Render ----
         SDL_SetRenderDrawColor(window->renderer, 0, 0, 0, 255);
         SDL_RenderClear(window->renderer);
-
+        arena.DrawScoreboard(window->renderer, fontScore, scoreboard);
         arena.Render(window->renderer);
         ball.Render(window->renderer);
         player.Render(window->renderer);
