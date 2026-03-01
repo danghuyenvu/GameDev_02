@@ -5,6 +5,7 @@
 #include "arena.h"
 #include "ball.h"
 #include "player.h"
+#include "menu.h"
 
 int main(int argc, char* argv[])
 {
@@ -25,17 +26,46 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    // --- Menu Selection ---
+    Menu menu;
+    bool menuActive = true;
+    Uint64 lastCounter = SDL_GetPerformanceCounter();
+    Uint64 frequency = SDL_GetPerformanceFrequency();
+    
+    while (menuActive) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_QUIT) {
+                delete(window);
+                SDL_Quit();
+                return 0;
+            }
+        }
+        
+        const bool* keyboardState = SDL_GetKeyboardState(nullptr);
+        menu.HandleInput(keyboardState);
+        
+        if (menu.IsMapSelected()) {
+            menuActive = false;
+        }
+        
+        SDL_SetRenderDrawColor(window->renderer, 0, 0, 0, 255);
+        SDL_RenderClear(window->renderer);
+        menu.Render(window->renderer, window->getWidth(), window->getHeight());
+        SDL_RenderPresent(window->renderer);
+    }
+
     // --- Create Game Objects ---
-    Arena arena;
-    Ball ball(arena.getBallStart(), 40.0f);
-    Player player(Vector2(600.0f, 500.0f));
-    Player player2(Vector2(400.0f, 500.0f), 2);
+    const MapConfig& selectedMap = menu.GetSelectedMap();
+    Arena arena(selectedMap.ver, selectedMap.width, selectedMap.height, selectedMap.wallThickness);
+    Ball ball(selectedMap.ballSpawnPos, 40.0f);
+    Player player(selectedMap.player1SpawnPos);
+    Player player2(selectedMap.player2SpawnPos, 2);
     int scoreboard[2] = {0};
     TTF_Font* fontScore = TTF_OpenFont("/System/Library/Fonts/Supplemental/Arial.ttf", 300);
     bool running = true;
 
-    Uint64 lastCounter = SDL_GetPerformanceCounter();
-    Uint64 frequency = SDL_GetPerformanceFrequency();
+    lastCounter = SDL_GetPerformanceCounter();
     bool first = true;
     while (running)
     {
@@ -89,18 +119,18 @@ int main(int argc, char* argv[])
         const bool* keyboardState = SDL_GetKeyboardState(nullptr);
         bool hurted = player.Check_collision(ball) or player2.Check_collision(ball);
         if (hurted){
-            ball.GetRect().x = arena.getBallStart().x;
-            ball.GetRect().y = arena.getBallStart().y;
+            ball.GetRect().x = selectedMap.ballSpawnPos.x;
+            ball.GetRect().y = selectedMap.ballSpawnPos.y;
             ball.setVelocity(Vector2(0.0f, 0.0f));
             ball.SetOwner(nullptr);
             if (player.IsDead()){
                 scoreboard[1] += 1; 
-                player.Reset(Vector2(600.0f, 500.0f));
+                player.Reset(selectedMap.player1SpawnPos);
             }
             else if (player2.IsDead())
             {
                 scoreboard[0] += 1;
-                player2.Reset(Vector2(400.0f, 500.0f));
+                player2.Reset(selectedMap.player2SpawnPos);
             }
         }
         player.HandleInput(keyboardState);
