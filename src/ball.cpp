@@ -137,7 +137,12 @@ void Ball::UnBunt()
     m_isBunted = false;
     m_preBuntOwner = nullptr;
     m_buntTimer = 0.0f;
-    m_vel.x = m_preBuntSpeed;
+    if (m_preBuntSpeed != 0)
+    {
+        m_vel.x = m_preBuntSpeed;
+        m_vel.y = 0;
+        m_preBuntSpeed = 0;
+    }
 }
 
 SDL_FRect& Ball::GetRect()

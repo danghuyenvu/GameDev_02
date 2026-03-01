@@ -9,7 +9,7 @@ class Player;
 class Ball
 {
 public:
-    Ball(Vector2 pos, float size = 20.0f);
+    Ball(Vector2 pos, float size = 50.0f);
 
     void Update(float deltaTime, Arena arena);
     void Render(SDL_Renderer* renderer) const;
