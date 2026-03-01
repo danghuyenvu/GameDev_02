@@ -12,6 +12,14 @@
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 
+// Game States
+enum class GameState {
+    MENU,           // Ở menu chọn map
+    GAMEPLAY,       // Đang chơi game
+    PAUSED,         // Tạm dừng (optional)
+    GAME_OVER       // Kết thúc game (optional)
+};
+
 class GameWindow{
     private:
     public:

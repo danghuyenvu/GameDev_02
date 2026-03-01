@@ -21,7 +21,6 @@ private:
     int m_width;
     int m_height;
     int m_wallThickness;
-
     SDL_FRect m_topWall;
     SDL_FRect m_bottomWall;
     SDL_FRect m_leftWall;
