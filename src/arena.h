@@ -14,8 +14,10 @@ public:
 
     // Checks collision and modifies velocity for ricochet
     void CheckCollision(SDL_FRect& ballRect, Vector2 &vel) const;
+
+    void DrawScoreboard(SDL_Renderer* renderer, TTF_Font* fontScore, int *scoreboard);
     void CheckCollisionCCD(SDL_FRect &ballRect, Vector2 &vel, float dt) const;
-    
+
     int GetWidth() const { return m_width; }
     int GetHeight() const { return m_height; }
     bool collidePlayer(SDL_FRect& playerRect, Vector2& playerVel);
