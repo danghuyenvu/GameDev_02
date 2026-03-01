@@ -365,8 +365,8 @@ void Player::Render(SDL_Renderer* renderer) const
         else
             SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // cyan
 
-        const int layers = 4;
-        const float spacing = 50.0f;     // distance between wave layers
+        const int layers = 5;
+        const float spacing = 25.0f;     // distance between wave layers
         const float lineHalfHeight = 70.0f;  // half height of each line
         const float startOffset = 5.0f; // how far from player it begins
 
@@ -527,8 +527,8 @@ void Player::Bunt(Ball& ball)
     m_isBunting = true;
     m_buntTimer = m_buntDuration;
 
-    const float HITBOX_WIDTH  = 140.0f;
-    const float HITBOX_HEIGHT = 140.0f;
+    const float HITBOX_WIDTH  = 100.0f;
+    const float HITBOX_HEIGHT = 100.0f;
     const float OFFSET = 5.0f;
 
     float centerX = m_rect.x + m_rect.w * 0.5f;
@@ -607,8 +607,8 @@ void Player::CatchThrow(Ball& ball)
 
     SDL_FRect& ballRect = ball.GetRect();
 
-    const float CATCH_WIDTH  = 125.0f;
-    const float CATCH_HEIGHT = 125.0f;
+    const float CATCH_WIDTH  = 130.0f;
+    const float CATCH_HEIGHT = 130.0f;
 
     float centerX = m_rect.x + m_rect.w * 0.5f;
     float centerY = m_rect.y + m_rect.h * 0.5f;
